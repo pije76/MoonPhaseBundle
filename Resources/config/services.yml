@@ -1,0 +1,5 @@
+parameters:
+
+services:
+    swis_moon_phase:
+        class: Swis\Bundle\MoonPhaseBundle\Service\MoonPhaseCalculator
