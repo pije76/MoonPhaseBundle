@@ -1,0 +1,27 @@
+{
+    "name": "swis/moonphase-bundle",
+    "description": "This Bundle integrates some moon phase calculation stuff into a Symfony2 project.",
+    "keywords": ["moon", "moon phase"],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name":     "Sascha Weyers",
+            "email":    "kontakt@sw-is.de"
+        },
+        {
+            "name":     "Samir Shah",
+            "homepage": "http://rayofsolaris.net",
+        }
+    ],
+    "require": {
+        "php":             ">=5.3.0",
+        "symfony/symfony": ">=2.1"
+    },
+    "autoload": {
+        "psr-0": {
+            "Swis\\Bundle\\MoonPhaseBundle": ""
+        }
+    },
+    "target-dir" : "Swis/Bundle/MoonPhaseBundle"
+}
