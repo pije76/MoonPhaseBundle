@@ -57,7 +57,7 @@ class HelloController
     {
         // ...
 
-        $lastNewMoonAsDateTime = $this->get('swis_moon_calculator')->getLastNewMoon($dt);
+        $lastNewMoonAsDateTime = $this->get('swis_moon_calculator')->getLastNewMoon();
 
         // ...
     }
