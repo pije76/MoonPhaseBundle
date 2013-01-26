@@ -41,13 +41,25 @@ If you use composer, add the bundle as dependency to the composer.json of your a
 
 ## Base configuration
 
-Actually, no configuration needed.
+Actually, there is no configuration needed.
 
 ## Usage
 
 In your controller, use
 
 ```php
-<?php
-    $this->get('swis_moon_calculator')->getLastNewMoon($dt);
+// src/Acme/HelloBundle/Controller/HelloController.php
+namespace Acme\HelloBundle\Controller;
+
+class HelloController
+{
+    public function indexAction($name)
+    {
+        // ...
+
+        $lastNewMoonAsDateTime = $this->get('swis_moon_calculator')->getLastNewMoon($dt);
+
+        // ...
+    }
+}
 ```
