@@ -7,7 +7,7 @@ namespace Swis\Bundle\MoonPhaseBundle\Model;
  * Adapted for PHP from Moontool for Windows (http://www.fourmilab.ch/moontoolw/)
  * by Samir Shah (http://rayofsolaris.net)
  * Last modified August 2012
- * 
+ *
  * @link https://github.com/solarissmoke/php-moon-phase
  * @author Samir Shah (http://rayofsolaris.net)
  * @license MIT
@@ -41,11 +41,11 @@ class MoonPhase
     const MSMAX = 384401;   // Semi-major axis of Moon's orbit in km
     const MPARALLAX = 0.9507;  // Parallax at distance a from Earth
     const SYNODIC_MONTH = 29.53058868; // Synodic month (new Moon to new Moon)
-    const LUNATBASE = 2423436.0;  // Base date for E. W. Brown's numbered series of lunations (1923 January 16)    
+    const LUNATBASE = 2423436.0;  // Base date for E. W. Brown's numbered series of lunations (1923 January 16)
 
     /**
      * Current time [s]
-     *  
+     *
      * @var number
      */
 
@@ -53,56 +53,56 @@ class MoonPhase
 
     /**
      * Moon phase (0 to 1)
-     * 
+     *
      * @var number
      */
     private $phase;
 
     /**
      * Amount of illuminated surface (0 to 1)
-     *  
+     *
      * @var number
      */
-    private $illum;
+    private $illuminatedFraction;
 
     /**
      * Moon age [d]
-     *  
+     *
      * @var number
      */
-    private $age;
+    private $ageOfMoonDays;
 
     /**
      * Distance to Earth [km]
-     *  
+     *
      * @var number
      */
-    private $dist;
+    private $moonEarthDistanceKm;
 
     /**
      * Angular diameter [rad]
-     *  
+     *
      * @var number
      */
     private $angdia;
 
     /**
      * Distance to Sun [km]
-     *  
+     *
      * @var number
      */
     private $distanceToSun;
 
     /**
      * Angular diameter of the sun [rad]
-     * 
+     *
      * @var number
      */
     private $sunAngularDiameter;
 
     /**
      * Lunar cycle timestamps for each quarter [s]
-     *  
+     *
      * @var array
      */
     private $quarters = null;
@@ -110,7 +110,7 @@ class MoonPhase
 
     /**
      * Calculate all data for the current time (Or an optional timestamp)
-     *  
+     *
      * @param number $date
      */
     function __construct(\DateTime $date = null)
@@ -168,25 +168,23 @@ class MoonPhase
         $BetaM = rad2deg(asin(sin(deg2rad($lPP - $NP)) * sin(deg2rad(self::MINC))));  // Ecliptic latitude
 
         /* Calculation of the phase of the Moon */
-        $MoonAge = $lPP - $eclipticLong;         // Age of the Moon in degrees
-        $MoonPhase = (1 - cos(deg2rad($MoonAge))) / 2;     // Phase of the Moon
+        $ageOfMoonDegrees = $lPP - $eclipticLong;         // Age of the Moon in degrees
+        $this->illuminatedFraction = (1 - \cos(\deg2rad($ageOfMoonDegrees))) / 2;     // Phase of the Moon
 // Distance of moon from the centre of the Earth
-        $MoonDist = (self::MSMAX * (1 - self::MECC * self::MECC)) / (1 + self::MECC * cos(deg2rad($MmP + $mEc)));
+        $this->moonEarthDistanceKm = (self::MSMAX * (1 - self::MECC * self::MECC)) / (1 + self::MECC * cos(deg2rad($MmP + $mEc)));
 
-        $MoonDFrac = $MoonDist / self::MSMAX;
-        $MoonAng = self::MANGSIZ / $MoonDFrac;        // Moon's angular diameter
-//$MoonPar = self::MPARALLAX / $MoonDFrac;							// Moon's parallax
-// store results
-        $this->phase = $this->normalizeAngle($MoonAge) / 360;     // Phase (0 to 1)
-        $this->illum = $MoonPhase;          // Illuminated fraction (0 to 1)
-        $this->age = self::SYNODIC_MONTH * $this->phase;       // Age of moon (days)
-        $this->dist = $MoonDist;          // Distance (kilometres)
-        $this->angdia = $MoonAng;          // Angular diameter (degrees)
+        $MoonDFrac = $this->moonEarthDistanceKm / self::MSMAX;
+        $moonAngularDiameter = self::MANGSIZ / $MoonDFrac;        // Moon's angular diameter
+        $moonParallax = self::MPARALLAX / $MoonDFrac;							// Moon's parallax
+
+        $this->phase = $this->normalizeAngle($ageOfMoonDegrees) / 360;     // Phase (0 to 1)
+        $this->ageOfMoonDays = self::SYNODIC_MONTH * $this->phase;       // Age of moon (days)
+        $this->angdia = $moonAngularDiameter;          // Angular diameter (degrees)
     }
 
     /**
      * Normalize angle
-     * 
+     *
      * @param number $a
      * @return number
      */
@@ -197,7 +195,7 @@ class MoonPhase
 
     /**
      * Solve Kepler equation
-     *  
+     *
      * @param number $m
      * @param number $ecc
      * @return number
@@ -217,13 +215,13 @@ class MoonPhase
 
     /**
      * Calculate mean new moon
-     * 
+     *
      * Calculates  time  of  the mean new Moon for a given
      * base date.  This argument K to this function is the
      * precomputed synodic month index, given by:
      *     K = (year - 1900) * 12.3685
      * where year is expressed as a year and fractional year.
-     * 
+     *
      * @param number $sdate
      * @param number $k
      * @return number
@@ -245,11 +243,11 @@ class MoonPhase
 
     /**
      * Get true phase time
-     * 
+     *
      * Given a K value used to determine the mean phase of
      * the new moon, and a phase selector (0.0, 0.25, 0.5,
      * 0.75), obtain the true, corrected phase time.
-     * 
+     *
      * @param number $k
      * @param number $phase
      * @return boolean|number
@@ -317,11 +315,11 @@ class MoonPhase
 
     /**
      * Find moon phases
-     * 
+     *
      * Find time of phases of the moon which surround the current date.
      * Five phases are found, starting and
      * ending with the new moons which bound the  current lunation.
-     * 
+     *
      */
     private function phasehunt()
     {
@@ -363,9 +361,9 @@ class MoonPhase
 
     /**
      * Convert timestamp to astronomical Julian time
-     * 
+     *
      * I.e. Julian date plus day fraction
-     * 
+     *
      * @param number $ts
      * @return number
      */
@@ -376,7 +374,7 @@ class MoonPhase
 
     /**
      * Get phase timestamp
-     *  
+     *
      * @param int $n
      * @return number
      */
@@ -394,10 +392,10 @@ class MoonPhase
 
     /**
      * Get phase [0 to 1]
-     * 
+     *
      * The terminator phase angle as a fraction of a full circle.
      * Both 0 and 1 correspond to a New Moon, and 0.5 corresponds to a Full Moon.
-     * 
+     *
      * @return number
      */
     public function phase()
@@ -407,43 +405,43 @@ class MoonPhase
 
     /**
      * Get illumination fraction [0 to 1]
-     * 
+     *
      * The illuminated fraction of the Moon (0 = New, 1 = Full).
-     * 
+     *
      * @return number
      */
     public function illumination()
     {
-        return $this->illum;
+        return $this->illuminatedFraction;
     }
 
     /**
      * Get the age of the Moon [d]
-     *  
+     *
      * @return number
      */
     public function age()
     {
-        return $this->age;
+        return $this->ageOfMoonDays;
     }
 
     /**
      * Get the distance to the Moon [km]
-     * 
+     *
      * From the centre of the Earth.
-     *  
+     *
      * @return number
      */
     public function distance()
     {
-        return $this->dist;
+        return $this->moonEarthDistanceKm;
     }
 
     /**
      * Get the Moon angular diameter [rad]
-     * 
+     *
      * Subtended by the Moon as seen by an observer at the centre of the Earth.
-     * 
+     *
      * @return number
      */
     public function diameter()
@@ -453,7 +451,7 @@ class MoonPhase
 
     /**
      * Get the distance of the Moon to the Sun [km]
-     *  
+     *
      * @return number
      */
     public function sundistance()
@@ -463,9 +461,9 @@ class MoonPhase
 
     /**
      * Get the Sun angular diameter [rad]
-     * 
+     *
      * Subtended by the Sun as seen by an observer at the centre of the Earth.
-     * 
+     *
      * @return number
      */
     public function sundiameter()
@@ -476,9 +474,9 @@ class MoonPhase
 
     /**
      * Calculates moon rise and moon set
-     * 
+     *
      * Adaptation by the PHP conversion done by Matt Hackmann of an unkown javascript library.
-     * 
+     *
      * @link http://dxprog.com/entry/calculate-moon-rise-and-set-in-php/
      * @param number $lat
      * @param number $lon
@@ -503,7 +501,7 @@ class MoonPhase
         $utrise = 0;
         $utset = 0;
 
-// Loop over hours until the moon rise and set times are found 
+// Loop over hours until the moon rise and set times are found
         $hour = 1;
         $ym = $this->sinAlt($date, $hour - 1, $lon, $cglat, $sglat) - $sinho;
 
@@ -537,17 +535,31 @@ class MoonPhase
 
         $utrise = $this->convertDecimalHours($utrise);
         $utset = $this->convertDecimalHours($utset);
-        $result->moonrise = $rise ? strtotime("Midnight +{$utrise['hrs']} hours +{$utrise['min']} minutes",
-                $this->timestamp) : strtotime('Midnight +1 day', $this->timestamp);
-        $result->moonset = $set ? strtotime("Midnight +{$utset['hrs']} hours +{$utset['min']} minutes",
-                $this->timestamp) : strtotime('Midnight +1 day', $this->timestamp);
+
+        if ($rise) {
+            $result->moonrise = \strtotime(
+                "Midnight +{$utrise['hrs']} hours +{$utrise['min']} minutes {$this->timezone->getName()}",
+                $this->timestamp
+            );
+        } else {
+            $result->moonrise = \strtotime('Midnight +1 day {$this->timezone->getName()}', $this->timestamp);
+        }
+
+        if ($set) {
+            $result->moonset = \strtotime(
+                "Midnight +{$utset['hrs']} hours +{$utset['min']} minutes {$this->timezone->getName()}",
+                $this->timestamp
+            );
+        } else {
+            $result->moonset = \strtotime('Midnight +1 day {$this->timezone->getName()}', $this->timestamp);
+        }
 
         return $result;
     }
 
     /**
      * Caculates the sine of the moon altitude
-     * 
+     *
      * @param number $mjd (Julian date) [s]
      * @param number $hour (Hour) [h]
      * @param number $glon (Longitude) [deg]
@@ -571,10 +583,10 @@ class MoonPhase
 
     /**
      * Takes t and returns the geocentric ra and dec in an array
-     * 
+     *
      * Claimed good to 5' (angle) in ra and 1' in dec
      * Tallies with another approximate method and with ICE for a couple of dates
-     * 
+     *
      * @param number $t
      * @return array($dec, $ra)
      */
@@ -653,7 +665,7 @@ class MoonPhase
 
     /**
      * Calculates LMST?
-     * 
+     *
      * @param number $mjd (Julian time) [s]
      * @param number $glon (Longitude) [deg]
      * @return number
@@ -668,7 +680,7 @@ class MoonPhase
 
     /**
      * Returns an angle in degrees between 0 and 360
-     * 
+     *
      * @param number $x
      * @return number
      */
@@ -682,7 +694,7 @@ class MoonPhase
 
     /**
      * Solve quadratic equation
-     * 
+     *
      * Finds the parabola throuh the three points (-1,ym), (0,yz), (1, yp)
      * and returns the coordinates of the max/min (if any) xe, ye
      * the values of x where the parabola crosses zero (roots of the self::quadratic)
@@ -691,7 +703,7 @@ class MoonPhase
      * Well, this routine is producing sensible answers
      *
      * Results passed as array [nz, z1, z2, xe, ye]
-     * 
+     *
      * @param number $ym
      * @param number $yz
      * @param number $yp
@@ -721,11 +733,11 @@ class MoonPhase
 
     /**
      * Calculate modified julian date
-     * 
+     *
      * Takes the day, month, year and hours in the day and returns the
      * modified julian day number defined as mjd = jd - 2400000.5
      * checked OK for Greg era dates - 26th Dec 02
-     * 
+     *
      * @param $timestamp
      * @return $juliandate
      */
@@ -754,7 +766,7 @@ class MoonPhase
 
     /**
      * Convert decimal hours to hours and minutes
-     * 
+     *
      * @param float $hours
      * @return array('hrs'|'min')
      */
